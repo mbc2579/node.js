@@ -8,6 +8,8 @@ const app = express()
 // 웹페이지에 디자인파일(css) 등록하는 코드
 // public 폴더에 있는 파일들을 html에서 사용 가능
 app.use(express.static(__dirname + '/public'))
+// ejs를 사용하기 위한 코드
+app.set('view engine', 'ejs')
 
 
 // 3. MongoDB와 서버 연결하기
@@ -66,11 +68,11 @@ app.get('/', (요청, 응답) => {
 
 // await를 사용하기 위해서는 함수 앞에 async를 작성
 // await은 정해진 곳만 붙일 수 있음 ex) Promise 뱉는 곳
-app.get('/list', async(요청, 응답) => {
-    let result = await db.collection('post').find().toArray() // 컬렉션의 모든 document 출력 하는 법
-    console.log(result)
-    응답.send(result)
-})
+// app.get('/list', async(요청, 응답) => {
+//     let result = await db.collection('post').find().toArray() // 컬렉션의 모든 document 출력 하는 법
+//     console.log(result)
+//     응답.send(result)
+// })
 
 // 첫 게시물의 제목만 뽑으려면?
 // app.get('/list', async(요청, 응답) => {
@@ -78,3 +80,17 @@ app.get('/list', async(요청, 응답) => {
 //     console.log(result[0].title)
 //     응답.send('result[0].title')
 // })
+
+// 5. 웹체이지에 DB데이터 넣기 (EJS, 서버사이드 렌더링)
+app.get('/list', async(요청, 응답) => {
+  let result = await db.collection('post').find().toArray() // 컬렉션의 모든 document 출력 하는 법
+  // console.log(result[0].title)
+
+  // 유저에게 ejs파일 보내는 법
+  // 응답.render('list.ejs') // ()안에는 경로를 ejs파일의 경로를 작성
+
+  // 서버 데이터를 ejs파일에 넣으려면?
+  // 1. ejs파일로 데이터 전송
+  // 2. ejs파일 안에서 <%=데이터이름%>
+  응답.render('list.ejs', { posts : result })
+})

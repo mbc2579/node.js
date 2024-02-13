@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="/main.css" rel="stylesheet">
+</head>
+<body class="grey-bg">
+    <div class="white-bg">
+        <div class="list-box">
+            <!-- 서버 데이터를 ejs파일에 넣으려면?
+            1. ejs파일로 데이터 전송
+            2. ejs파일 안에서 <%=데이터이름%> -->
+          <h4><%= posts[0].title %></h4>
+          <p><%= posts[0].content %></p>
+        </div>
+        <div class="list-box">
+          <h4><%= posts[1].title %></h4>
+          <p><%= posts[1].content %></p>
+        </div>
+      </div> 
+</body>
+</html>
