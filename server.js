@@ -10,6 +10,8 @@ const app = express()
 app.use(express.static(__dirname + '/public'))
 // ejs를 사용하기 위한 코드
 app.set('view engine', 'ejs')
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
 
 
 // 3. MongoDB와 서버 연결하기
@@ -92,5 +94,13 @@ app.get('/list', async(요청, 응답) => {
   // 서버 데이터를 ejs파일에 넣으려면?
   // 1. ejs파일로 데이터 전송
   // 2. ejs파일 안에서 <%=데이터이름%>
-  응답.render('list.ejs', { posts : result })
+  응답.render('list.ejs', {posts : result})
+})
+
+app.get('/write', (요청, 응답) => {
+      응답.render('write.ejs')
+  })
+
+app.post('/add', (요청, 응답) => {
+    console.log(요청.body)
 })
