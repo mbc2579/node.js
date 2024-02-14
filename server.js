@@ -101,6 +101,16 @@ app.get('/write', (요청, 응답) => {
       응답.render('write.ejs')
   })
 
-app.post('/add', (요청, 응답) => {
-    console.log(요청.body)
+app.post('/add', async(요청, 응답) => {
+
+  try {
+    if (요청.body.title == '' || 요청.body.content == '') {
+      응답.send('제목 또는 내용을 입력해주세요.')
+    } else {
+      await db.collection('post').insertOne({title : 요청.body.title, content : 요청.body.content})
+      응답.redirect('/list')
+    }
+  } catch(e) {
+      응답.status(500).send('서버에러')
+  }
 })
