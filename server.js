@@ -4,6 +4,9 @@
 const express = require('express') 
 const res = require('express/lib/response')
 const app = express()
+// 3. MongoDB와 서버 연결하기
+// MongoBD를 연결하기 위한 코드
+const {MongoClient, ObjectId} = require('mongodb'); // ObjectId 추가 코드
 
 // 웹페이지에 디자인파일(css) 등록하는 코드
 // public 폴더에 있는 파일들을 html에서 사용 가능
@@ -13,10 +16,6 @@ app.set('view engine', 'ejs')
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
-
-// 3. MongoDB와 서버 연결하기
-// MongoBD를 연결하기 위한 코드
-const { MongoClient } = require('mongodb')
 
 let db
 const url = 'mongodb+srv://sparta:qwer1234@cluster0.yxrieip.mongodb.net/?retryWrites=true&w=majority'
@@ -113,4 +112,11 @@ app.post('/add', async(요청, 응답) => {
   } catch(e) {
       응답.status(500).send('서버에러')
   }
+})
+
+app.get('/detail/:aaaa', async(요청, 응답)=> {
+  let result = await db.collection('post').findOne({_id : new ObjectId('65caf2711eed5e1af4b49163')})
+  console.log(요청.params)
+  console.log(result)
+  응답.render('detail.ejs')
 })
