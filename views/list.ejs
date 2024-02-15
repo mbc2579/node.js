@@ -25,7 +25,7 @@
                     <!-- 서버 데이터를 ejs파일에 넣으려면?
                     1. ejs파일로 데이터 전송
                     2. ejs파일 안에서 %=데이터이름% -->
-                    <h4><%= posts[i].title %></h4>
+                    <h4><a href="/detail/<%=posts[i]._id%>"><%= posts[i].title %></a></h4>
                     <p><%= posts[i].content %></p>
                 </div>
             <% } %>

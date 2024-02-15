@@ -114,9 +114,12 @@ app.post('/add', async(요청, 응답) => {
   }
 })
 
-app.get('/detail/:aaaa', async(요청, 응답)=> {
-  let result = await db.collection('post').findOne({_id : new ObjectId('65caf2711eed5e1af4b49163')})
-  console.log(요청.params)
-  console.log(result)
-  응답.render('detail.ejs')
+app.get('/detail/:id', async(요청, 응답)=> {
+
+  try {
+    let result = await db.collection('post').findOne({_id : new ObjectId(요청.params.id)})
+    응답.render('detail.ejs', {result : result})
+  } catch(e) {
+    응답.status(400).send('url을 잘못 입력하셨습니다.')
+  }
 })
