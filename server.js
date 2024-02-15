@@ -7,6 +7,9 @@ const app = express()
 // 3. MongoDB와 서버 연결하기
 // MongoBD를 연결하기 위한 코드
 const {MongoClient, ObjectId} = require('mongodb'); // ObjectId 추가 코드
+const methodOverride = require('method-override') // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
+
+app.use(methodOverride('_method')) // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
 
 // 웹페이지에 디자인파일(css) 등록하는 코드
 // public 폴더에 있는 파일들을 html에서 사용 가능
@@ -133,7 +136,26 @@ app.get('/edit/:id', async(요청, 응답)=> {
   응답.render('edit.ejs', {result : result})
 })
 
-app.post('/edit', async(요청, 응답)=> {
+app.put('/edit', async(요청, 응답)=> {
+
+  // updateOne() 추가 사용법
+  // $set은 덮어쓰게 됨 
+  // $inc는 기존값에 +/-하게됨
+  // $mul은 기존값에 x하게 됨
+  // $unset은 필드값 삭제
+  // await db.collection('post').updateOne({_id : 1}, {$set : {like : 2}}) 
+  // 응답.redirect('/list')
+
+  // 동시에 여러개의 document를 수정하기 위해서는 updateOne이 아닌 updateMany 사용
+  // await db.collection('post').updateMany({_id : 1}, {$set : {like : 2}}) 
+  // 응답.redirect('/list')
+
+  // 특정 조건에 맞는 document를 찾아오고 싶을 때
+  // ex) like 항목이 10이상인 document 전부 수정하고 싶음 
+  // $gt는 ~~보다 큰, $gte는 ~~이상, $lt는 ~~보다 작은, $lte는 ~~이하, $ne는 ~~랑 같지 않다
+  // await db.collection('post').updateMany({like : {$gt : 10}}, {$set : {like : 2}}) 
+  // 응답.redirect('/list')
+
 
   await db.collection('post').updateOne({_id : new ObjectId(요청.body.id)}, {$set : {title : 요청.body.title, content : 요청.body.content}})
   응답.redirect('/list')
