@@ -160,3 +160,9 @@ app.put('/edit', async(요청, 응답)=> {
   await db.collection('post').updateOne({_id : new ObjectId(요청.body.id)}, {$set : {title : 요청.body.title, content : 요청.body.content}})
   응답.redirect('/list')
 })
+
+app.delete('/delete', async (요청,응답) => {
+  console.log(요청.query)
+  await db.collection('post').deleteOne({_id : new ObjectId(요청.query.docid)})
+  응답.send('삭제완료')
+})

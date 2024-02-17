@@ -25,10 +25,26 @@
                     <!-- 서버 데이터를 ejs파일에 넣으려면?
                     1. ejs파일로 데이터 전송
                     2. ejs파일 안에서 %=데이터이름% -->
-                    <h4><a href="/detail/<%=posts[i]._id%>"><%= posts[i].title %></a> <a href="/edit/<%=posts[i]._id %>">✏️</a></h4>
+                    <h4><a href="/detail/<%=posts[i]._id%>"><%= posts[i].title %></a> <a href="/edit/<%=posts[i]._id %>">✏️</a> <span class="delete" data-id="<%= posts[i]._id %>"> 🗑️ </span> </h4>
                     <p><%= posts[i].content %></p>
                 </div>
             <% } %>
         </div> 
+
+        <script>
+            document.querySelectorAll('.delete')[0].addEventListener('click', function(e) {
+                e.target.dataset.id
+                fetch('/delete?docid=' + e.target.dataset.id, {
+                    method : 'DELETE'
+                })
+            })
+
+            document.querySelectorAll('.delete')[1].addEventListener('click', function(e) {
+                e.target.dataset.id
+                fetch('/delete?docid=' + e.target.dataset.id, {
+                    method : 'DELETE'
+                })
+            })
+        </script>
     </body>
 </html>
