@@ -38,6 +38,12 @@
                     fetch('/delete?docid=' + e.target.dataset.id, {
                         method : 'DELETE'
                     })
+                    // 서버가 보내는게 문자일 경우 .text()
+                    // 서버가 보내는거 array나 오브젝트 데이터일 경우 .json()
+                    .then((r)=>r.text())
+                    .then((r)=> {
+                        e.target.parentElement.parentElement.style.display = 'none'
+                    })
                 })
             }
         </script>
