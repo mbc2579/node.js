@@ -19,6 +19,21 @@ app.set('view engine', 'ejs')
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
+// passport라이브러리 셋팅 코드
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local')
+
+app.use(passport.initialize())
+app.use(session({
+  secret: '암호화에 쓸 비번', // 암호에 쓸 비번 (세션의 document id는 암호화해서 유저에게 보냄)
+  resave : false,           // 유저가 서버로 요청할 때 마다 세션을 갱신할건지 보통은 false
+  saveUninitialized : false // 로그인 안해도 세션을 만들것인지 보통은 false
+}))
+
+app.use(passport.session()) 
+
+
 
 let db
 const url = 'mongodb+srv://sparta:qwer1234@cluster0.yxrieip.mongodb.net/?retryWrites=true&w=majority'
@@ -197,4 +212,37 @@ app.get('/list/:id', async (요청, 응답) => {
 app.get('/list/next/:id', async (요청, 응답) => {
   let result = await db.collection('post').find({_id : {$gt : new ObjectId(요청.params.id)}}).limit(5).toArray()
   응답.render('list.ejs', { posts : result})
+})
+
+// 제출한 아이디 / 비번 검사하는 코드
+// 아래 코드를 실행하고 싶으면 passport.authenticate('local')() 사용 
+passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) => {
+  let result = await db.collection('user').findOne({ username : 입력한아이디})
+  if (!result) {
+    return cb(null, false, { message: '아이디 DB에 없음' }) // 회원인증 실패시 false를 넣어줌
+  }
+  if (result.password == 입력한비번) {
+    return cb(null, result)
+  } else {
+    return cb(null, false, { message: '비번불일치' }); // 회원인증 실패시 false를 넣어줌
+  }
+}))
+
+app.get('/login', async (요청, 응답) => {
+  응답.render('login.ejs')
+})
+
+app.post('/login', async (요청, 응답, next) => {
+  // 비교 작업시에 에러가 났을 때는 error에 에러 값이 들어옴
+  // 비교 작업시에 성공했을 때는 user에 성공시 로그인한 유저정보 값이 들어옴
+  // 비교 작업시에 실패했을 때는 info에 실패시 이유가 들어옴
+  passport.authenticate('local', (error, user, info) => {
+      if(error) return 응답.status(500).json(error) // 비교 작업시 에러
+      if(!user) return 응답.status(401).json(info.message) // 비교 작업시 실패
+      요청.logIn(user, (err) => { // 비교 작업시 성공
+        if (err) return next(err)
+        응답.redirect('/')
+    })
+  })(요청, 응답, next)
+  
 })

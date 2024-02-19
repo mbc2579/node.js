@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="/main.css" rel="stylesheet">
+</head>
+    <body class="grey-bg">
+
+        <!--
+        %은 html사이에 자바스크립트 문법을 쓸 때 사용
+        %-은 include문법 같은거 쓸 때 사용
+        %=은 %-랑 유사하지만 %= 사이에 데이터가 html 파일이라고 가정하면 %=은 들어간 데이터가 고대로 나오지만 %-은 실제 html처럼 출력됨
+
+        include()를 쓰면 다른 ejs파일에 있던 html 복사해올 수 있음
+        -->
+
+        <%- include('nav.ejs') %>
+        
+        <form class="form-box" action="/login" method="POST">
+            <h4>로그인</h4>
+
+            <!-- passport 사용시 name 속성 맞춰야함 -->
+            <input name="username">
+            <input name="password" type="password">
+            <button type="submit">전송</button>
+        </form> 
+
+    </body>
+</html>
