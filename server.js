@@ -28,7 +28,8 @@ app.use(passport.initialize())
 app.use(session({
   secret: '암호화에 쓸 비번', // 암호에 쓸 비번 (세션의 document id는 암호화해서 유저에게 보냄)
   resave : false,           // 유저가 서버로 요청할 때 마다 세션을 갱신할건지 보통은 false
-  saveUninitialized : false // 로그인 안해도 세션을 만들것인지 보통은 false
+  saveUninitialized : false, // 로그인 안해도 세션을 만들것인지 보통은 false
+  cookie : {maxAge : 60 * 60 * 1000} // 세션 document 유효기간 변경 가능 현재 1시간
 }))
 
 app.use(passport.session()) 
@@ -50,9 +51,9 @@ new MongoClient(url).connect().then((client)=>{
 
 
 // user가 main페이지에 접속 했을 때 hello world를 띄어줌
-app.get('/', (요청, 응답) => {
-    응답.send('hello world')
-})
+// app.get('/', (요청, 응답) => {
+//     응답.send('hello world')
+// })
 
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
@@ -228,7 +229,33 @@ passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) =
   }
 }))
 
+// 유저가 로그인 시 세션을 부여해주는 passport라이브러리 코드 serializeUser()
+passport.serializeUser((user, done) => {
+  // 내부 코드를 비동기적으로 처리해줌 queueMicrotask()랑 유사
+  process.nextTick(() => {
+    done(null, {id : user._id, username : user.username}) // 세션document에 기록할 내용
+  })
+})
+
+// 유저가 보낸 쿠키 분석 코드 deserializeUser()
+// 문제점 : 세션 document에 적힌 유저정보를 그대로 요청.user에 담아줌 이렇게 되면 오래된 데이터와 최신 데이터가 다를 수 있음
+// passport.deserializeUser((user, done) => {
+//   process.nextTick(() => {
+//     done(null, user)
+//   })
+// })
+
+// 위 코드의 문제점을 해결하기 위해 db에서 유저의 최신 정보를 먼저 가져온 후 요청.user에 넣어줌
+passport.deserializeUser(async (user, done) => {
+  let result = await db.collection('user').findOne({_id : new ObjectId(user.id)})
+  delete result.password // 유정 정보의 비밀번호는 삭제 후 넣기 위해 작성한 코드
+  process.nextTick(() => {
+    done(null, result)
+  })
+})
+
 app.get('/login', async (요청, 응답) => {
+  console.log(요청.user)
   응답.render('login.ejs')
 })
 
