@@ -25,6 +25,7 @@ const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
 const MongoStore = require('connect-mongo') // connect-mongo 셋팅 코드
+require('dotenv').config()
 
 app.use(passport.initialize())
 app.use(session({
@@ -33,22 +34,26 @@ app.use(session({
   saveUninitialized : false, // 로그인 안해도 세션을 만들것인지 보통은 false
   cookie : {maxAge : 60 * 60 * 1000}, // 세션 document 유효기간 변경 가능 현재 1시간
   store : MongoStore.create({
-    mongoUrl : 'mongodb+srv://sparta:qwer1234@cluster0.yxrieip.mongodb.net/?retryWrites=true&w=majority', // DB접속용 URL~~
+    mongoUrl : process.env.DB_URL, // DB접속용 URL~~
     dbName : 'forum' // 세선 저장할 db이름
   })
 }))
 
 app.use(passport.session()) 
+// 여기 밑에있는 모든 API는 checkLogin미들웨어가 적용됨
+// 제한사항도 넣을 수 있음 ex) URL이 일치하는 API만 적용하고 싶을 때
+// app.use('/URL'checkLogin)
+app.use(checkLogin) 
 
 
 
 let db
-const url = 'mongodb+srv://sparta:qwer1234@cluster0.yxrieip.mongodb.net/?retryWrites=true&w=majority'
+const url = process.env.DB_URL;
 new MongoClient(url).connect().then((client)=>{
   console.log('DB연결성공')
   db = client.db('forum')
   // 서버 띄어주는 코드
-  app.listen(8080, () => {
+  app.listen(process.env.PORT, () => {
     console.log('http://localhost:8080 에서 서버 실행중')
   })
 }).catch((err)=>{
@@ -81,10 +86,20 @@ app.get('/shop', (요청, 응답) => {
     응답.send('쇼핑 페이지입니다.')
 })
 
+function checkLogin(요청, 응답, next) {
+  if(!요청.user) {
+    응답.send('로그인하세요')
+  }
+  next() // 미들웨어 실행코드 끝났으니 다음으로 이동하라는 코드 없으면 무한대기 상태
+}
+
+
 // user가 main페이지에 접속 했을 때 index.html 파일을 띄어줌
 // __dirname은 현재 프로젝트 절대 경로를 뜻한다.
+// 미들웨어를 사용하게 되면 get요청 후 미들웨어 코드를 먼저 실행하고 아래 코드를 실행
+// 미들웨어 여러개 넣을라면 [함수1, 함수2, 함수3 ....]
 app.get('/', (요청, 응답) => {
-    응답.sendFile(__dirname + '/index.html')
+  응답.sendFile(__dirname + '/index.html')
 })
 
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
