@@ -166,3 +166,35 @@ app.delete('/delete', async (요청,응답) => {
   await db.collection('post').deleteOne({_id : new ObjectId(요청.query.docid)})
   응답.send('삭제완료')
 })
+
+// limit을 사용하면 처음부터 5개를 출력
+
+// app.get('/list/1', async (요청, 응답) => {
+//   let result = await db.collection('post').find().limit(5).toArray()
+//   응답.render('list.ejs', { posts : result})
+// })
+
+// skip(5)를 사용하면 앞에 5개를 스킵하고 6 ~ 10까지 출력
+
+// app.get('/list/2', async (요청, 응답) => {
+//   let result = await db.collection('post').find().skip(5).limit(5).toArray()
+//   응답.render('list.ejs', { posts : result})
+// })
+
+// skip(10)을 사용하면 앞에 10개를 스킵하고 11 ~ 15까지 출력
+
+// app.get('/list/3', async (요청, 응답) => {
+//   let result = await db.collection('post').find().skip(10).limit(5).toArray()
+//   응답.render('list.ejs', { posts : result})
+// })
+
+
+app.get('/list/:id', async (요청, 응답) => {
+  let result = await db.collection('post').find().skip((요청.params.id - 1) * 5).limit(5).toArray()
+  응답.render('list.ejs', { posts : result})
+})
+
+app.get('/list/next/:id', async (요청, 응답) => {
+  let result = await db.collection('post').find({_id : {$gt : new ObjectId(요청.params.id)}}).limit(5).toArray()
+  응답.render('list.ejs', { posts : result})
+})
