@@ -8,6 +8,7 @@ const app = express()
 // MongoBD를 연결하기 위한 코드
 const {MongoClient, ObjectId} = require('mongodb'); // ObjectId 추가 코드
 const methodOverride = require('method-override') // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
+const bcrypt = require('bcrypt') // bcrypt 셋팅 코드
 
 app.use(methodOverride('_method')) // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
 
@@ -23,13 +24,18 @@ app.use(express.urlencoded({extended:true}))
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
+const MongoStore = require('connect-mongo') // connect-mongo 셋팅 코드
 
 app.use(passport.initialize())
 app.use(session({
   secret: '암호화에 쓸 비번', // 암호에 쓸 비번 (세션의 document id는 암호화해서 유저에게 보냄)
   resave : false,           // 유저가 서버로 요청할 때 마다 세션을 갱신할건지 보통은 false
   saveUninitialized : false, // 로그인 안해도 세션을 만들것인지 보통은 false
-  cookie : {maxAge : 60 * 60 * 1000} // 세션 document 유효기간 변경 가능 현재 1시간
+  cookie : {maxAge : 60 * 60 * 1000}, // 세션 document 유효기간 변경 가능 현재 1시간
+  store : MongoStore.create({
+    mongoUrl : 'mongodb+srv://sparta:qwer1234@cluster0.yxrieip.mongodb.net/?retryWrites=true&w=majority', // DB접속용 URL~~
+    dbName : 'forum' // 세선 저장할 db이름
+  })
 }))
 
 app.use(passport.session()) 
@@ -222,7 +228,7 @@ passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) =
   if (!result) {
     return cb(null, false, { message: '아이디 DB에 없음' }) // 회원인증 실패시 false를 넣어줌
   }
-  if (result.password == 입력한비번) {
+  if (await bcrypt.compare(입력한비번, result.password)) {
     return cb(null, result)
   } else {
     return cb(null, false, { message: '비번불일치' }); // 회원인증 실패시 false를 넣어줌
@@ -272,4 +278,15 @@ app.post('/login', async (요청, 응답, next) => {
     })
   })(요청, 응답, next)
   
+})
+
+app.get('/register', (요청, 응답) => {
+  응답.render('register.ejs')
+})
+
+app.post('/register', async(요청, 응답) => {
+  let password = await bcrypt.hash(요청.body.password, 10)
+
+  await db.collection('user').insertOne({username : 요청.body.username, password : password})
+  응답.redirect('/')
 })
