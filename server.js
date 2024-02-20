@@ -168,12 +168,11 @@ app.post('/add', upload.single('img1'), async(요청, 응답) => {
 
   // 업로드 완료시 이미지의 URL도 생성해줌
   // console.log(요청.file.location)
-
   try {
     if (요청.body.title == '' || 요청.body.content == '') {
       응답.send('제목 또는 내용을 입력해주세요.')
     } else {
-      await db.collection('post').insertOne({title : 요청.body.title, content : 요청.body.content, img : 요청.file.location})
+      await db.collection('post').insertOne({title : 요청.body.title, content : 요청.body.content, img : 요청.file ? 요청.file.location : '', user : 요청.user._id, username : 요청.user.username})
       응답.redirect('/list')
     }
   } catch(e) {
@@ -227,7 +226,7 @@ app.put('/edit', async(요청, 응답)=> {
 
 app.delete('/delete', async (요청,응답) => {
   console.log(요청.query)
-  await db.collection('post').deleteOne({_id : new ObjectId(요청.query.docid)})
+  await db.collection('post').deleteOne({_id : new ObjectId(요청.query.docid), user : new ObjectId(요청.user._id)})
   응답.send('삭제완료')
 })
 
