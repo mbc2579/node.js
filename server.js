@@ -340,8 +340,20 @@ app.use('/shop', require('./routes/shop.js'))
 // find와 index의 성능 평가하는 코드
 app.get('/search', async (요청, 응답) => {
   console.log(요청.query.val)
+
+  let 검색조건 = [
+    {$search : {
+      index : 'title_index',
+      text : { query : 요청.query.val, path : 'title' }
+    }}
+    // {$sort : { _id : 1}}, // 결과 정렬
+    // {$limit : 10}, // 결과수 제한
+    // {$skip : 10},   // 건너뛰기
+    // {$project : { title : 1}} // 필드 숨기기
+  ]
+
   // let result = await db.collection('post').find({$text : {$search : 요청.query.val}}).explain('executionStats')
   // console.log(result)
-  let result = await db.collection('post').find({$text : {$search : 요청.query.val}}).toArray()
+  let result = await db.collection('post').aggregate(검색조건).toArray()
   응답.render('search.ejs', {posts : result})
 })
