@@ -336,8 +336,12 @@ app.post('/register', async(요청, 응답) => {
 // 공통된 URL 축약 /shop 부분에 축양할 공통된 URL작성
 app.use('/shop', require('./routes/shop.js'))
 
+
+// find와 index의 성능 평가하는 코드
 app.get('/search', async (요청, 응답) => {
   console.log(요청.query.val)
-  let result = await db.collection('post').find({title : {$regex : 요청.query.val}}).toArray()
+  // let result = await db.collection('post').find({$text : {$search : 요청.query.val}}).explain('executionStats')
+  // console.log(result)
+  let result = await db.collection('post').find({$text : {$search : 요청.query.val}}).toArray()
   응답.render('search.ejs', {posts : result})
 })
