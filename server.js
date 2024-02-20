@@ -40,10 +40,28 @@ app.use(session({
 }))
 
 app.use(passport.session()) 
-// 여기 밑에있는 모든 API는 checkLogin미들웨어가 적용됨
-// 제한사항도 넣을 수 있음 ex) URL이 일치하는 API만 적용하고 싶을 때
-// app.use('/URL'checkLogin)
-app.use(checkLogin) 
+
+
+const { S3Client } = require('@aws-sdk/client-s3')
+const multer = require('multer')
+const multerS3 = require('multer-s3')
+const s3 = new S3Client({
+  region : 'ap-northeast-2',
+  credentials : {
+      accessKeyId : process.env.S3_KEY,
+      secretAccessKey : process.env.S3_SECRET,
+  }
+})
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'node.forum',
+    key: function (요청, file, cb) {
+      cb(null, Date.now().toString()) //업로드시 파일명 변경가능
+    }
+  })
+})
 
 
 
@@ -93,6 +111,11 @@ function checkLogin(요청, 응답, next) {
   next() // 미들웨어 실행코드 끝났으니 다음으로 이동하라는 코드 없으면 무한대기 상태
 }
 
+// 여기 밑에있는 모든 API는 checkLogin미들웨어가 적용됨
+// 제한사항도 넣을 수 있음 ex) URL이 일치하는 API만 적용하고 싶을 때
+// app.use('/URL'checkLogin)
+// app.use(checkLogin)
+
 
 // user가 main페이지에 접속 했을 때 index.html 파일을 띄어줌
 // __dirname은 현재 프로젝트 절대 경로를 뜻한다.
@@ -140,13 +163,18 @@ app.get('/write', (요청, 응답) => {
       응답.render('write.ejs')
   })
 
-app.post('/add', async(요청, 응답) => {
+  // name = "img1" 가진 이미지가 들어오면 S3에 자동 업로드해줌
+  // upload.single은 이미지 1장 upload.array는 이미지 여러장 숫자 2는 이미지 최대 숫자 지정
+app.post('/add', upload.single('img1'), async(요청, 응답) => {
+
+  // 업로드 완료시 이미지의 URL도 생성해줌
+  // console.log(요청.file.location)
 
   try {
     if (요청.body.title == '' || 요청.body.content == '') {
       응답.send('제목 또는 내용을 입력해주세요.')
     } else {
-      await db.collection('post').insertOne({title : 요청.body.title, content : 요청.body.content})
+      await db.collection('post').insertOne({title : 요청.body.title, content : 요청.body.content, img : 요청.file.location})
       응답.redirect('/list')
     }
   } catch(e) {
@@ -273,7 +301,7 @@ passport.deserializeUser(async (user, done) => {
   process.nextTick(() => {
     done(null, result)
   })
-})
+}) 
 
 app.get('/login', async (요청, 응답) => {
   console.log(요청.user)
