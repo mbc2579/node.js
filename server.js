@@ -63,11 +63,10 @@ const upload = multer({
   })
 })
 
-
+let connectDB = require('./database.js')
 
 let db
-const url = process.env.DB_URL;
-new MongoClient(url).connect().then((client)=>{
+connectDB.then((client)=>{
   console.log('DB연결성공')
   db = client.db('forum')
   // 서버 띄어주는 코드
@@ -333,3 +332,6 @@ app.post('/register', async(요청, 응답) => {
   await db.collection('user').insertOne({username : 요청.body.username, password : password})
   응답.redirect('/')
 })
+
+// 공통된 URL 축약 /shop 부분에 축양할 공통된 URL작성
+app.use('/shop', require('./routes/shop.js'))
