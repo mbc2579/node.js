@@ -10,6 +10,12 @@ const {MongoClient, ObjectId} = require('mongodb'); // ObjectId 추가 코드
 const methodOverride = require('method-override') // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
 const bcrypt = require('bcrypt') // bcrypt 셋팅 코드
 
+// socket.io 라이브러리 셋팅 코드
+const { createServer } = require('http')
+const { Server } = require('socket.io')
+const server = createServer(app)
+const io = new Server(server) 
+
 app.use(methodOverride('_method')) // methodOverride 셋팅 코드 form태그에서 put, delete 등을 사용할 수 있게해줌
 
 // 웹페이지에 디자인파일(css) 등록하는 코드
@@ -71,7 +77,7 @@ connectDB.then((client)=>{
   console.log('DB연결성공')
   db = client.db('forum')
   // 서버 띄어주는 코드
-  app.listen(process.env.PORT, () => {
+  server.listen(process.env.PORT, () => {
     console.log('http://localhost:8080 에서 서버 실행중')
   })
 }).catch((err)=>{
@@ -421,4 +427,22 @@ app.get('/chat/list', async (요청, 응답)=> {
 app.get('/chat/detail/:id', async (요청, 응답)=> {
   let result = await db.collection('chatroom').findOne({_id : new ObjectId(요청.params.id)})
   응답.render('chatDetail.ejs', {result : result})
+})
+
+// 유저가 웹소켓 연결시 서버에서 코드 실행
+io.on('connection', (socket)=> {
+  socket.on('age', (data)=> {
+    console.log('유저가 보낸거 : ', data)
+
+    // 서버 -> 모든 유저에게 데이터 전송
+    io.emit('name', 'kim')
+  })
+
+  socket.on('ask-join', (data)=> {
+    socket.join(data)
+  })
+
+  socket.on('message', (data)=> {
+    io.to(data.room).emit('broadcast', data.msg)
+  })
 })
