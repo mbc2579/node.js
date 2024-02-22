@@ -63,7 +63,8 @@ const upload = multer({
   })
 })
 
-let connectDB = require('./database.js')
+let connectDB = require('./database.js');
+const { patch } = require('./routes/shop.js');
 
 let db
 connectDB.then((client)=>{
@@ -367,3 +368,37 @@ app.post('/comment', async (요청, 응답) => {
   })
   응답.redirect('back')
 })
+
+// Node+Express 서버와 React연동하는 코드
+// React파일을 따로 만들지 않아서 코드만 작성
+
+// const express = require('express')
+// const app = express()
+// const path = require('path')
+
+// app.listen(8080, function() {
+//   console.log('listening on 8080')
+// })
+
+// app.use(express.json());
+// var cors = require('cors');
+// app.use(cors());
+
+// app.use(express.static(path.join(__dirname, 'react-project/build')));
+
+// app.get('/', function(요청, 응답) {
+//   응답.sendFile(path.join(__dirname, '리액트로만든html파일경로'));
+// })
+
+// DB데이터를 리액트에서 보여주고 싶을 때
+// html을 서버가 만들면 server-side rendering
+// html을 리액트가 만들면client-side rendering
+// app.get('/product', function(요청, 응답) {
+//   응답.json({name : 'black shoes'})
+// })
+
+
+// 리액트라우터 쓰는 경우 사용 코드 아래에 작성해 놓으면 좋음
+// app.get('*', function(요청, 응답) {
+  // 응답.sendFile(path.join(__dirname, 'react-project/build/index.html'));
+// })
