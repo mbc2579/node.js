@@ -447,3 +447,17 @@ io.on('connection', (socket)=> {
     io.to(data.room).emit('message-broadcast', data.msg)
   })
 })
+
+app.get('/stream/list', (요청, 응답) => {
+  응답.writeHead(200, {
+    "Connection": "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  })
+
+  // 자바스크립트에서 1초마다 특정 코드를 실행하고 싶을 때 쓰는 함수
+  setInterval(()=> {
+    응답.write('event: msg\n')
+    응답.write('data: 바보\n\n')
+  }, 1000)
+})
