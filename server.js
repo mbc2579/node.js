@@ -386,6 +386,10 @@ app.post('/comment', async (요청, 응답) => {
   응답.redirect('back')
 })
 
+// 타입 힌드주기 (JSDoc)
+/** @type { {title : string, content : string } } */
+// let result = await db.collection('post').findOne({title : '하이'})
+
 // Node+Express 서버와 React연동하는 코드
 // React파일을 따로 만들지 않아서 코드만 작성
 
