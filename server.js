@@ -73,9 +73,20 @@ let connectDB = require('./database.js');
 const { patch } = require('./routes/shop.js');
 
 let db
+let changeStream
 connectDB.then((client)=>{
   console.log('DB연결성공')
   db = client.db('forum')
+
+  // insert 되는 경우만 감지하고 싶을 때
+  let 조건 = [ { $match : { operationType : 'insert' } }]
+
+  // fullDocument의 title가 ~~인 것들만 감지하고 싶을 때
+  let 조건2 = [ { $match : { 'fullDocument.title' : '안녕하십니까' } }]
+
+  // post 컬렉션의 document생성/수정/삭제시 (변동사항이 생길때 마다)
+  changeStream = db.collection('post').watch(조건)
+
   // 서버 띄어주는 코드
   server.listen(process.env.PORT, () => {
     console.log('http://localhost:8080 에서 서버 실행중')
@@ -456,8 +467,17 @@ app.get('/stream/list', (요청, 응답) => {
   })
 
   // 자바스크립트에서 1초마다 특정 코드를 실행하고 싶을 때 쓰는 함수
-  setInterval(()=> {
+  // setInterval(()=> {
+  //   응답.write('event: msg\n')
+  //   응답.write('data: 바보\n\n')
+  // }, 1000)
+
+
+  
+  changeStream.on('change', (result)=> {
+    // console.log(result) // 전체 document내용
+    console.log(result.fullDocument) // 방금 추가된 document 내용이 궁금할 때
     응답.write('event: msg\n')
-    응답.write('data: 바보\n\n')
-  }, 1000)
+    응답.write(`data: ${JSON.stringify(result.fullDocument)}\n\n`)
+  })
 })
