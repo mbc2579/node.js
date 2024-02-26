@@ -442,7 +442,8 @@ io.on('connection', (socket)=> {
     socket.join(data)
   })
 
-  socket.on('message', (data)=> {
-    io.to(data.room).emit('broadcast', data.msg)
+  socket.on('message-send', (data)=> {
+    // console.log(data)
+    io.to(data.room).emit('message-broadcast', data.msg)
   })
 })
